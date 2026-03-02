@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import FileResponse
 import csv
 import os
 from datetime import datetime
@@ -49,6 +50,17 @@ async def get_dashboard(request: Request):
         "labels": labels, 
         "values": values
     })
+
+@app.get("/download_data", response_class=HTMLResponse)
+async def get_data(request: Request):
+    file_path = CSV_FILE
+    return FileResponse(
+            file_path, 
+            media_type='application/octet-stream', 
+            filename="sound_data.csv"
+    )
+    
+    
 
 if __name__ == "__main__":
     import uvicorn
