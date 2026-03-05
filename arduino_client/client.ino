@@ -3,15 +3,16 @@
 
 const char* ssid = "SJSU_guest";
 const char* password = "";
-const char* serverUrl = "http://[IP_ADDRESS]/log"; // Your server's IP
+const char* serverUrl = "http://sce.sjsu.edu/sound"; // Your server's IP
 
 const int micPin = 34;
-const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
+const int sampleWindow = 5000; // Sample window width in mS (50 mS = 20Hz)
+const String API_KEY = "API_KEY_HERE"; // Replace with your actual API key
 
 void setup() {
   Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -27,6 +28,7 @@ void loop() {
 
   while (millis() - startMillis < sampleWindow) {
     int sample = analogRead(micPin);
+    Serial.println(sample);
     if (sample < 4095) {
       if (sample > signalMax) signalMax = sample;
       else if (sample < signalMin) signalMin = sample;
@@ -39,6 +41,7 @@ void loop() {
     HTTPClient http;
     http.begin(serverUrl);
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    http.addHeader("X-API-Key", "YOUR_API_KEY");
     
     String httpRequestData = "level=" + String(peakToPeak);
     int httpResponseCode = http.POST(httpRequestData);
@@ -48,10 +51,11 @@ void loop() {
       Serial.println(peakToPeak);
     } else {
       Serial.print("Error on sending POST: ");
+      Serial.println(peakToPeak);
       Serial.println(httpResponseCode);
     }
     http.end();
   }
   
-  delay(1000); // Wait 1 second before next sample
+  delay(300000); // Wait 5 minutes before next sample
 }
